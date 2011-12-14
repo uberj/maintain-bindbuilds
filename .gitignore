@@ -1,0 +1,8 @@
+*pyc
+snap_shot/*
+database.py
+database.cfg
+output.txt
+build_test/*
+sync_prod_to_test.py
+real_bind_configs
