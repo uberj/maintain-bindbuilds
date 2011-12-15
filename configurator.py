@@ -3,13 +3,18 @@ Helper class to build named.conf files.
 """
 class Configurator(object):
 
-    def __init__( self, db_cur, named_dir="/etc/bind", build_dir="/var/named" ):
-        self.named_dir = named_dir # Where to put the named.conf file
+    """
+    @param bind_dir: Where bind is located. This where the the named.conf.maintain file will be put.
+    @param build_dir: Where the actual zone files will be placed after the build completes (bind needs to know this).
+    """
+    def __init__( self, db_cur, bind_dir="/etc/bind", build_dir="/var/named" ):
+        self.bind_dir = bind_dir # Where to put the named.conf file
         self.build_dir = build_dir # Where the zone files are kept
         self.cur = db_cur# Database cursor
-        self.conf_fd = open(self.named_dir+"/"+"named.conf.maintain", "w+")
+        self.conf_fd = open(self.bind_dir+"/"+"named.conf.maintain", "w+")
 
     def build_named_conf( self ):
+        print "Building named.conf.maintain in "+self.build_dir
         for domain in self.get_auth_domains():
             self.conf_fd.write( self.gen_auth_zone( domain, "master", self.build_dir+"/"+domain ) )
 

@@ -45,14 +45,19 @@ class Printer(object):
         soa += "%s IN SOA %s. %s. (\n" % (dname, primary_master, contact)
         soa +="\n"
         soa += str(serial).rjust(self.AJUST1+off," ")
+        soa +=" ;Serial"
         soa +="\n"
         soa += str(refresh).rjust(self.AJUST1+off," ")
+        soa +=" ;Refresh"
         soa +="\n"
         soa += str(retry).rjust(self.AJUST1+off," ")
+        soa +=" ;Retry"
         soa +="\n"
         soa += str(expire).rjust(self.AJUST1+off," ")
+        soa +=" ;Expire"
         soa +="\n"
         soa += str(minimum).rjust(self.AJUST1+off," ")+" )"
+        soa +=" ;Minimum"
         soa +="\n"
         self.fd.write(soa)
 

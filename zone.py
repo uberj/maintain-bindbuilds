@@ -15,14 +15,17 @@ build a zone file. These are the steps it shuold take to build it's zone file.
     7.a) For each child.
         * If there is an SOA for that child, make a new Zone object.
           Initialize that new zone with the new domain. Call walk_domain.
-        * If this the subdomain is part of this Zone (it has no new SOA),
-          recurse.
+        * If the subdomain is part of this Zone (it has no new SOA),
+          recurse starting at step 2.
 
 PROBLEMS:
     MX records are being finiky. Example is kbvr.com.
         Notes kbvr: Search zone_mx for name= %skbvr%s
         It's domain is 543 which links to the com domain in the domain table.
-    Solution: Add a record in the zone_mx table with name=''
+    Solution: Add a record in the zone_mx table with name=''. The real problem is that
+        records aren't allowed to live at the master domain level (they *can* be at subdomain
+        level i.e. foo.oregonstate.edu can have an NS record, but oregonstate.edu can't. This
+        is more of a bug in the maintain GUI than in the actual database.
 """
 class Zone(object):
     BUILD_DIR="./build"
@@ -45,6 +48,11 @@ class Zone(object):
 
 
 
+    """
+    The brians of the zone object.
+    Notes: We skip domains with in-addr.arpa in their name (they are reverse domains).
+        The Reverse_Zone object takes care of those specific domains.
+    """
     def walk_domain( self, cur_domain , dname ):
         #TODO Consider moving the SOA genration into __init__
         if self.check_for_SOA( cur_domain, dname ):
