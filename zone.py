@@ -1,4 +1,4 @@
-from hostlib2.utilities import long2ip
+from utilities import long2ip
 import pdb
 import re
 import printer
@@ -50,7 +50,7 @@ class Zone(object):
         if self.check_for_SOA( cur_domain, dname ):
             self.gen_SOA( cur_domain, dname )
         self.gen_domain( cur_domain, dname )
-        self.cur.execute("SELECT * FROM `domain` WHERE `master_domain`=%s;" % (cur_domain))
+        self.cur.execute("""SELECT * FROM `domain` WHERE `name` NOT LIKE "%%.in-addr.arpa" AND `master_domain`=%s;""" % (cur_domain))
         domains = self.cur.fetchall()
         for subdomain in domains:
             child_name = subdomain[1]

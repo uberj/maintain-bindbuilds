@@ -17,6 +17,7 @@ class Printer(object):
         self.fd.write("%s %s%s%s%s\n" % (name,rr_type," "*self.AJUST2,data,terminal))
 
     def print_PTR( self, ip, dname ):
+        ip = '.'.join(list(reversed(ip.split('.')))) # Reverse the ip along '.' boundaries
         self.print_rr( ip, dname, "PTR", "." )
 
     def print_A( self, dname, ip , terminal=""):

@@ -1,5 +1,5 @@
 import database
-from hostlib2.utilities import ip2long, long2ip
+from utilities import ip2long, long2ip
 import pdb
 import pprint
 import printer
@@ -71,7 +71,7 @@ class Reverse_Zone(object):
 
         self.gen_ORIGIN( domain, dname, 999 )
         self.gen_NS( domain, dname )
-        self.gen_ORIGIN( domain, '.in-addr.arpa', 999 )
+        self.gen_ORIGIN( domain, 'in-addr.arpa', 999 )
         records_to_remove = []
         for record in records:
             longip, name = record
