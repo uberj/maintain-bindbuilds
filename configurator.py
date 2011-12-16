@@ -14,7 +14,7 @@ class Configurator(object):
         self.conf_fd = open(self.bind_dir+"/"+"named.conf.maintain", "w+")
 
     def build_named_conf( self ):
-        print "Building named.conf.maintain in "+self.build_dir
+        print "Building named.conf.maintain in "+self.bind_dir
         for domain in self.get_auth_domains():
             self.conf_fd.write( self.gen_auth_zone( domain, "master", self.build_dir+"/"+domain ) )
 
