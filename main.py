@@ -1,6 +1,6 @@
 import database
 from zone_builder import Zone_Builder
-from reverse_zone import Reverse_Zone_Builder
+from reverse_zone_builder import Reverse_Zone_Builder
 from configurator import Configurator
 from optparse import OptionParser
 from utilities import ip2long, long2ip
