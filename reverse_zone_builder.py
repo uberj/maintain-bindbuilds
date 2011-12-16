@@ -6,6 +6,10 @@ import printer
 import re
 import copy
 
+from env import *
+from maintain2.domain.models import Domain
+from maintain2.soa.models import Soa
+
 class Reverse_Zone_Builder(object):
     BUILD_DIR="./build"
     SERIAL = 1
@@ -35,18 +39,16 @@ class Reverse_Zone_Builder(object):
     @param records: global record list (global to recursive stack)
     """
     def walk_tree( self, cur_domain, cur_dname, records ):
-        self.cur.execute("SELECT id, name FROM domain WHERE name LIKE '%.in-addr.arpa' AND master_domain="+str(cur_domain)+" ORDER BY name")
-        domains = self.cur.fetchall()
+        domains = Domain.objects.all()
+        domains = domains.filter( master_domain = cur_domain, name__endswith = ".in-addr.arpa" ).order_by( "name" )
         for domain in domains:
-            child_domain = domain[0]
-            child_dname = domain[1]
-            if self.check_for_SOA( child_domain, child_dname ):
-                rzone_fd = open( "%s/%s" % (Reverse_Zone_Builder.BUILD_DIR, child_dname), "w+")
-                new_rzone = Reverse_Zone_Builder( self.cur, rzone_fd, child_domain, child_dname )
-                new_rzone.gen_SOA( child_domain, child_dname ) # SOA ALWAYS has to be first thing.
-                new_rzone.walk_tree( child_domain, child_dname, records )
+            if self.check_for_SOA( domain.id, domain.name ):
+                rzone_fd = open( "%s/%s" % (Reverse_Zone_Builder.BUILD_DIR, domain.name), "w+")
+                new_rzone = Reverse_Zone_Builder( self.cur, rzone_fd, domain.id, domain.name )
+                new_rzone.gen_SOA( domain.id, domain.name ) # SOA ALWAYS has to be first thing.
+                new_rzone.walk_tree( domain.id, domain.name, records )
             else:
-                self.walk_tree( child_domain, child_dname, records )
+                self.walk_tree( domain.id, domain.name, records )
         self.gen_domain( cur_domain, cur_dname, records )
 
     """
@@ -101,33 +103,27 @@ class Reverse_Zone_Builder(object):
     This function may be redundant.
     """
     def check_for_SOA( self, domain, dname ):
-        self.cur.execute("SELECT * FROM `soa` WHERE `domain`='%s' ;" % (domain))
-        records = self.cur.fetchall() # Could use fetch one. Want to do check though.
-        if len(records) > 1:
+        soa = Soa.objects.filter( domain=domain )
+        if len( soa ) > 1:
             self.printer.print_raw( ";Sanity Check failed\n" )
-        if not records:
+        if not soa:
             # We don't have an SOA for this domain.
             return False
         else:
             return True
 
     def gen_SOA( self, domain, dname ):
-        self.cur.execute("SELECT * FROM `soa` WHERE `domain`='%s' ;" % (domain))
-        records = self.cur.fetchall() # Could use fetch one. Want to do check though.
-        if len(records) > 1:
+        soa = Soa.objects.filter( domain=domain )
+        if len( soa ) > 1:
             self.printer.print_raw( ";Sanity Check failed" )
-        if not records:
+        if not soa:
             # We don't have an SOA for this domain.
             self.printer.print_raw( ";No soa for "+dname+"  "+str(domain) )
             return
-        record = records[0]
-        primary_master = record[2]
-        contact = record[3]
-        REFRESH = record[4]
-        RETRY = record[5]
-        EXPIRE = record[6]
-        MINIMUM = record[7] #TODO What is minimum, using TTL
-        self.printer.print_SOA( dname, primary_master, contact, Reverse_Zone_Builder.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        soa = soa[0] # We have this as a list so we can do some sanity checking on it.
+        self.printer.print_SOA( dname, soa.primary_master, soa.hostmaster, \
+                                Reverse_Zone_Builder.SERIAL, soa.refresh, soa.retry, \
+                                soa.expire, soa.ttl )
 
     """
     We need ip's from: host, ranges, and pointer.
@@ -158,15 +154,6 @@ class Reverse_Zone_Builder(object):
                 PTR_records.append( (ip,long2ip(ip).replace('.','-')) )
         return PTR_records
 
-
-    def build_tree( self, cur_domain, tree ):
-        self.cur.execute("SELECT id FROM domain WHERE name LIKE '%.in-addr.arpa' AND master_domain="+str(cur_domain))
-        domains = self.cur.fetchall()
-        for domain in domains:
-            parent_domain = domain[0]
-            parent_tree = {}
-            tree[parent_domain] = self.build_tree( parent_domain, parent_tree )
-        return tree
 
     def ip_from_domainname( self, dname ):
         ip_data = re.search("(\d+).(\d*).?(\d*).?(\d*).*",dname)

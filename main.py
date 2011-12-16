@@ -4,6 +4,8 @@ from reverse_zone_builder import Reverse_Zone_Builder
 from configurator import Configurator
 from optparse import OptionParser
 from utilities import ip2long, long2ip
+# Import django env for models
+from env import *
 
 
 class Maintain(object):
