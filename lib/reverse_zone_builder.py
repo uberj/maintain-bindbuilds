@@ -6,7 +6,7 @@ import printer
 import re
 import copy
 
-class Reverse_Zone(object):
+class Reverse_Zone_Builder(object):
     BUILD_DIR="./build"
     SERIAL = 1
 
@@ -41,8 +41,8 @@ class Reverse_Zone(object):
             child_domain = domain[0]
             child_dname = domain[1]
             if self.check_for_SOA( child_domain, child_dname ):
-                rzone_fd = open( "%s/%s" % (Reverse_Zone.BUILD_DIR, child_dname), "w+")
-                new_rzone = Reverse_Zone( self.cur, rzone_fd, child_domain, child_dname )
+                rzone_fd = open( "%s/%s" % (Reverse_Zone_Builder.BUILD_DIR, child_dname), "w+")
+                new_rzone = Reverse_Zone_Builder( self.cur, rzone_fd, child_domain, child_dname )
                 new_rzone.gen_SOA( child_domain, child_dname ) # SOA ALWAYS has to be first thing.
                 new_rzone.walk_tree( child_domain, child_dname, records )
             else:
@@ -127,7 +127,7 @@ class Reverse_Zone(object):
         RETRY = record[5]
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
-        self.printer.print_SOA( dname, primary_master, contact, Reverse_Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        self.printer.print_SOA( dname, primary_master, contact, Reverse_Zone_Builder.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
 
     """
     We need ip's from: host, ranges, and pointer.
@@ -178,23 +178,3 @@ class Reverse_Zone(object):
             octets.remove('')
         #ip_mask = ( octets + (["0"] * 4) )[:4]
         return '.'.join(octets)
-
-"""
-print rz.ip_from_domainname( '139.201.199.in-addr.arpa' )
-print rz.ip_from_domainname( '10.in-addr.arpa' )
-print rz.ip_from_domainname( '193.128.in-addr.arpa' )
-print rz.ip_from_domainname( '16.211.140.in-addr.arpa' )
-pp.pprint( gen_all_records() )
-#pp.pprint( rz.build_tree(0, {}) )
-#rz.walk_tree( rz.build_tree(0, {}), rz.gen_all_records() )
-records = rz.gen_all_records()
-before = len(records)
-rz.walk_tree( 0, 'root', records )
-print "id="+str(id(records))
-after = len(records)
-for record in records:
-    print "%s %s" % (long2ip(record[0]), record[1])
-#walk_tree( build_tree(0, '', {}), [])
-print before
-print after
-"""

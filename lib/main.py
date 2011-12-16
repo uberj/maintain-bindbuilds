@@ -1,6 +1,6 @@
 import database
-from zone import Zone
-from reverse_zone import Reverse_Zone
+from zone_builder import Zone_Builder
+from reverse_zone import Reverse_Zone_Builder
 from configurator import Configurator
 from optparse import OptionParser
 from utilities import ip2long, long2ip
@@ -40,14 +40,14 @@ class Maintain(object):
 
     def zones_build( self, build_dir ):
         # Regular zones
-        Zone.BUILD_DIR = build_dir
-        reg_zone = Zone( self.cur, self.fd, 0, "." )
+        Zone_Builder.BUILD_DIR = build_dir
+        reg_zone = Zone_Builder( self.cur, self.fd, 0, "." )
         reg_zone.walk_domain( 0, "." )
 
     def reverse_zones_build( self, build_dir ):
         # Reverse zones
-        Reverse_Zone.BUILD_DIR = build_dir
-        rev_zone = Reverse_Zone( self.cur, self.fd, 0, '' )
+        Reverse_Zone_Builder.BUILD_DIR = build_dir
+        rev_zone = Reverse_Zone_Builder( self.cur, self.fd, 0, '' )
         records = rev_zone.gen_all_records()
         rev_zone.walk_tree( 0, 'root', records )
         if self.run_records_test:
@@ -67,10 +67,10 @@ if __name__ == "__main__":
     parser.add_option("-d", "--bind_dir", default="/etc/bind", dest="bind_dir", help="Where to place the named.conf.maintain file")
     (options, args) = parser.parse_args()
     if options.build_all:
-        print "*Building everything*"
+        print "***Building everything***"
         print "Building forward zones"
         print "Building reverse zones"
-        print "Building named.conf.maintain"
+        print "Building named.conf.maintain into "+options.bind_dir
         print "Build dir is "+options.build_dir
         m = Maintain( True, True, True, options.bind_dir, options.build_dir, options.run_records_test )
     else:

@@ -3,7 +3,7 @@ import pdb
 import re
 import printer
 """
-A Zone object should be initialized at a base domain. From that domain it should start to
+A zone_builder object should be initialized at a base domain. From that domain it should start to
 build a zone file. These are the steps it shuold take to build it's zone file.
 1) If there is an SOA, print it.
 2) Print an $ORIGIN directive
@@ -13,8 +13,8 @@ build a zone file. These are the steps it shuold take to build it's zone file.
 6) Print CNAMES
 7) Get all domains that are `children` of that domain.
     7.a) For each child.
-        * If there is an SOA for that child, make a new Zone object.
-          Initialize that new zone with the new domain. Call walk_domain.
+        * If there is an SOA for that child, make a new zone_builder object.
+          Initialize that new zone_builder with the new domain. Call walk_domain.
         * If the subdomain is part of this Zone (it has no new SOA),
           recurse starting at step 2.
 
@@ -27,7 +27,7 @@ PROBLEMS:
         level i.e. foo.oregonstate.edu can have an NS record, but oregonstate.edu can't. This
         is more of a bug in the maintain GUI than in the actual database.
 """
-class Zone(object):
+class Zone_Builder(object):
     BUILD_DIR="./build"
     SERIAL = 1
 
@@ -49,9 +49,9 @@ class Zone(object):
 
 
     """
-    The brians of the zone object.
+    The brians of the zone_builder object.
     Notes: We skip domains with in-addr.arpa in their name (they are reverse domains).
-        The Reverse_Zone object takes care of those specific domains.
+        The Reverse_zone_builder object takes care of those specific domains.
     """
     def walk_domain( self, cur_domain , dname ):
         #TODO Consider moving the SOA genration into __init__
@@ -64,8 +64,8 @@ class Zone(object):
             child_name = subdomain[1]
             child_domain = subdomain[0]
             if self.check_for_SOA( child_domain, child_name ):
-                zone_fd = open( "%s/%s" % (Zone.BUILD_DIR, child_name), "w+")
-                new_zone = Zone( self.cur, zone_fd, child_domain, child_name )
+                zone_fd = open( "%s/%s" % (Zone_Builder.BUILD_DIR, child_name), "w+")
+                new_zone = Zone_Builder( self.cur, zone_fd, child_domain, child_name )
                 new_zone.walk_domain( child_domain, child_name )
                 continue
             self.walk_domain( child_domain, child_name )
@@ -124,7 +124,7 @@ class Zone(object):
         RETRY = record[5]
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
-        self.printer.print_SOA( dname, primary_master, contact, Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        self.printer.print_SOA( dname, primary_master, contact, Zone_Builder.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
 
     def gen_ORIGIN( self, domain, dname, ttl ):
         origin = "$ORIGIN  %s.\n" % (dname)
