@@ -37,11 +37,12 @@ class Printer(object):
         for ns in nameservers:
             self.fd.write("%s NS%s%s.\n" % (padding," "*self.AJUST2,ns))
 
-    def print_SOA( self, dname, primary_master, contact,serial, refresh, retry, expire, minimum ):
+    def print_SOA( self, ttl, dname, primary_master, contact,serial, refresh, retry, expire, minimum ):
         dname = dname+"."
         dname = dname.ljust(self.AJUST1," ")
         off = 9
         soa = ""
+        soa += "$TTL %s\n" % (ttl)
         soa += "%s IN SOA %s. %s. (\n" % (dname, primary_master, contact)
         soa +="\n"
         soa += str(serial).rjust(self.AJUST1+off," ")

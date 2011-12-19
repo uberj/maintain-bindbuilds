@@ -127,7 +127,7 @@ class Reverse_Zone(object):
         RETRY = record[5]
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
-        self.printer.print_SOA( dname, primary_master, contact, Reverse_Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        self.printer.print_SOA( record[7], dname, primary_master, contact, Reverse_Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
 
     """
     We need ip's from: host, ranges, and pointer.
