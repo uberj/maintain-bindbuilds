@@ -6,17 +6,21 @@ class Configurator(object):
     """
     @param bind_dir: Where bind is located. This where the the named.conf.maintain file will be put.
     @param build_dir: Where the actual zone files will be placed after the build completes (bind needs to know this).
+    @test_file: a generated bashscript that tests all zone files generated for syntax errors.
     """
-    def __init__( self, db_cur, bind_dir="/etc/bind", build_dir="/var/named" ):
+    def __init__( self, db_cur, bind_dir="/etc/bind", build_dir="/var/named", test_file="/tmp/maintain_checkzones" ):
         self.bind_dir = bind_dir # Where to put the named.conf file
         self.build_dir = build_dir # Where the zone files are kept
         self.cur = db_cur# Database cursor
         self.conf_fd = open(self.bind_dir+"/"+"named.conf.maintain", "w+")
+        self.named_checkzone = open(test_file, "w+")
+        self.named_checkzone.write("#!/bin/bash/\n")
 
     def build_named_conf( self ):
         print "Building named.conf.maintain in "+self.bind_dir
         for domain in self.get_auth_domains():
             self.conf_fd.write( self.gen_auth_zone( domain, "master", self.build_dir+"/"+domain ) )
+            self.named_checkzone.write("named-checkzone %s %s\n" % (domain, self.build_dir+"/"+domain) )
 
 
     def gen_auth_zone( self,  name, server_type, file_path ):
