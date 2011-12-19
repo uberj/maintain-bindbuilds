@@ -30,6 +30,7 @@ PROBLEMS:
 class Zone(object):
     BUILD_DIR="./build"
     SERIAL = 1
+    DEFAULT_TTL = 999
 
     """
     @cur: database cursor
@@ -57,6 +58,7 @@ class Zone(object):
         #TODO Consider moving the SOA genration into __init__
         if self.check_for_SOA( cur_domain, dname ):
             self.gen_SOA( cur_domain, dname )
+
         self.gen_domain( cur_domain, dname )
         self.cur.execute("""SELECT * FROM `domain` WHERE `name` NOT LIKE "%%.in-addr.arpa" AND `master_domain`=%s;""" % (cur_domain))
         domains = self.cur.fetchall()
@@ -83,17 +85,19 @@ class Zone(object):
     def gen_MX( self, domain, dname ):
         self.cur.execute("SELECT * FROM `zone_mx` WHERE `domain`='%s' ORDER BY `name`;" % (domain))
         records = self.cur.fetchall()
+        self.gen_ORIGIN( domain, '' , Zone.DEFAULT_TTL )
         for record in records:
-            if record[1] == "":
-                name = "@"
-            else:
-                name = record[1]
+            name = record[1]
             domain = record[2]
             ttl = record[5]
             server = record[3]
             prio = record[4]
             ttl = record[5]
-            self.printer.print_MX( name, domain, ttl, prio, server  )
+            if name == "":
+                self.printer.print_MX( dname, domain, ttl, prio, server  )
+            else:
+                self.printer.print_MX( name+"."+dname, domain, ttl, prio, server  )
+        self.gen_ORIGIN( domain, dname , Zone.DEFAULT_TTL )
     """
     This function may be redundant.
     """
@@ -124,7 +128,7 @@ class Zone(object):
         RETRY = record[5]
         EXPIRE = record[6]
         MINIMUM = record[7] #TODO What is minimum, using TTL
-        self.printer.print_SOA( dname, primary_master, contact, Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
+        self.printer.print_SOA( record[7], dname, primary_master, contact, Zone.SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM )
 
     def gen_ORIGIN( self, domain, dname, ttl ):
         origin = "$ORIGIN  %s.\n" % (dname)
