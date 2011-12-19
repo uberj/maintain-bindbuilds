@@ -63,7 +63,7 @@ if __name__ == "__main__":
     parser.add_option("-r", "--rev_zone", default=False, action="store_true", dest="build_rev", help="Build reverse zones")
     parser.add_option("-c", "--config", default=False, action="store_true", dest="build_config", help="Build named.conf.maintain file")
     parser.add_option("-t", "--run_records_test", default=False, action="store_true", dest="run_records_test", help="Run records test claus")
-    parser.add_option("-b", "--build_dir", default="/var/named/", dest="build_dir", help="A directory to store the build output")
+    parser.add_option("-b", "--build_dir", default="/var/named", dest="build_dir", help="A directory to store the build output")
     parser.add_option("-d", "--bind_dir", default="/etc/bind", dest="bind_dir", help="Where to place the named.conf.maintain file")
     (options, args) = parser.parse_args()
     if options.build_all:
