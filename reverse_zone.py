@@ -73,11 +73,11 @@ class Reverse_Zone(object):
         self.gen_NS( domain, dname )
         self.gen_ORIGIN( domain, 'in-addr.arpa', 999 )
         records_to_remove = []
+        search_string = "^"+self.ip_from_domainname(dname).replace('.','\.')+"\."
         for record in records:
             longip, name = record
             ip = long2ip(longip)
             # TODO compile this
-            search_string = "^"+self.ip_from_domainname(dname).replace('.','\.')
             if re.search( search_string, ip ):
                 self.printer.print_PTR( ip, name )
                 records_to_remove.append( record )
