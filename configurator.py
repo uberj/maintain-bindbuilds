@@ -14,7 +14,7 @@ class Configurator(object):
         self.cur = db_cur# Database cursor
         self.conf_fd = open(self.bind_dir+"/"+"named.conf.maintain", "w+")
         self.named_checkzone = open(test_file, "w+")
-        self.named_checkzone.write("#!/bin/bash/\n")
+        self.named_checkzone.write("#!/bin/bash\n")
 
     def build_named_conf( self ):
         print "Building named.conf.maintain in "+self.bind_dir
