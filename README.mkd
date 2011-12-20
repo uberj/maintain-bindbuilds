@@ -1,17 +1,18 @@
-Wrapping Maintain in Django Models
-==================================
+Less of a README and more of place for notes.
+
+### Wrapping Maintain in Django Models (Not possible due to lack of foreign key support in the databse)
 
 #### Tables needed  for DNS (at this time)
 
-domain
-host
-nameserver
-ranges
-pointer
-soa
-zone_cname
-zone_domain
-zone_mx
+    domain
+    host
+    nameserver
+    ranges
+    pointer
+    soa
+    zone_cname
+    zone_domain
+    zone_mx
 
 Notes about how to make things better
 -------------------------------------
@@ -24,9 +25,8 @@ Server: The name of the mail server to use in the MX record.
 Right now it has a fruity logic dealing with the 'name' field.
 
 FFS USE FOREIGN KEYS IN THE DATABASE SCHEME!! Until this happens a pure NOSQL solution is going to be difficult to implement.
-    * About this... All of the tables are MyISAM tables (doesn't support foreign keys). You need to convert them to
-      InnoDB tables and make sure there are indexs on all of the key fields.
-      Also, if you try to create a foreign key and there is an error about child feilds run a statement like this.
+
+    * About this... All of the tables are MyISAM tables (doesn't support foreign keys). You need to convert them to InnoDB tables and make sure there are indexs on all of the key fields. Also, if you try to create a foreign key and there is an error about child feilds run a statement like this.
 
           SELECT soa.id
           FROM soa
@@ -35,59 +35,56 @@ FFS USE FOREIGN KEYS IN THE DATABASE SCHEME!! Until this happens a pure NOSQL so
           AND domain.id IS NULL
           ORDER BY `soa`.`id` DESC
 
-      It finds all the records that refereing to other records that don't exist. You will probably have to delete
-      these records or make appropriate records in the foreign table with the correct id's.
+It finds all the records that refereing to other records that don't exist. You will probably have to delete these records or make appropriate records in the foreign table with the correct ids.
 
 Items that need to be added to maintain for bind builds to work
 ---------------------------------------------------------------
 Some things are hard coded in static files, like top level nameservers. This is really stupid. Here is a list of
 things we are going to need to add to the database by hand (we could do this in the UI, but that is tedious for so many records).
+
 ### Top level MX records
 
-@orst.edu::relay.oregonstate.edu:5:600
-@oregonstate.edu::relay.oregonstate.edu:5:600
-@ous.edu::relay.oregonstate.edu:5:600
-@osucascades.edu::relay.oregonstate.edu:5
+    @orst.edu::relay.oregonstate.edu:5:600
+    @oregonstate.edu::relay.oregonstate.edu:5:600
+    @ous.edu::relay.oregonstate.edu:5:600
+    @osucascades.edu::relay.oregonstate.edu:5
 
 Someone messed up inserting certain domains into the table. For example:
 the domain oes.oregonstate.edu has an id of 558. It *should* have a master domain of 218 (oregonstate.edu's domain
 id, but it doesnt.
 
 _These should be fixed._
-oes.oregonstate.edu -> master_domain = 218
-chem.               "           "
-stat.               "           "
-mu.                 "           "
-ucs.                 "           "
-whales.                 "           "
-hmscad.                 "           "
-*.ortop.org
+    oes.oregonstate.edu -> master_domain = 218
+    chem.               "           "
+    stat.               "           "
+    mu.                 "           "
+    ucs.                 "           "
+    whales.                 "           "
+    hmscad.                 "           "
+    *.ortop.org
 
 Some SQL that helped fix the MX record bug. Not sure if this got everything...
-INSERT INTO zone_mx(
-    name,
-    domain,
-    server,
-    priority,
-    ttl,
-    zone,
-    enabled
-)
-SELECT '' as name, d1.id AS domain, server, priority, ttl, zone_mx.zone AS zone, zone_mx.enabled
-FROM domain AS d1, domain AS d2, zone_mx
-WHERE d2.id
-IN ( 444, 543, 1045, 541 )
-AND d1.name = CONCAT( zone_mx.name, '.', d2.name )
+    INSERT INTO zone_mx(
+        name,
+        domain,
+        server,
+        priority,
+        ttl,
+        zone,
+        enabled
+    )
+    SELECT '' as name, d1.id AS domain, server, priority, ttl, zone_mx.zone AS zone, zone_mx.enabled
+    FROM domain AS d1, domain AS d2, zone_mx
+    WHERE d2.id
+    IN ( 444, 543, 1045, 541 )
+    AND d1.name = CONCAT( zone_mx.name, '.', d2.name )
 
 &&
 
-DELETE
-FROM zone_mx
-WHERE domain IN ( 444, 543, 1045, 541 )
+    DELETE
+    FROM zone_mx
+    WHERE domain IN ( 444, 543, 1045, 541 )
 
 Notes on how to do reverse pointers.
 ====================================
-Whenever an IP is entered into the database, check which reverse zone it belongs to. So if you put
-128.193.14.16 into a host, reverse, or whatever record see which reverse domain is belongs to.
-It then uses that domain's key as a "reverse domain" key in the record. If it cant find a valid reverse
-domain, through up an error. This will help with building reverse zones. *Important* adding domains in a sain way (i.e. its easy to determine what reverse domain it is. 193.128.in-addr.arpa is hard to parse, maybe some sort of raw raw_ip feild containing "128.193").
+Whenever an IP is entered into the database, check which reverse zone it belongs to. So if you put 128.193.14.16 into a host, reverse, or whatever record see which reverse domain is belongs to. It then uses that domain's key as a "reverse domain" key in the record. If it cant find a valid reverse domain, through up an error. This will help with building reverse zones. *Important* adding domains in a sain way (i.e. its easy to determine what reverse domain it is. 193.128.in-addr.arpa is hard to parse, maybe some sort of raw raw_ip feild containing "128.193").
