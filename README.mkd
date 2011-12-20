@@ -77,7 +77,7 @@ SELECT '' as name, d1.id AS domain, server, priority, ttl, zone_mx.zone AS zone,
 FROM domain AS d1, domain AS d2, zone_mx
 WHERE d2.id
 IN ( 444, 543, 1045, 541 )
-AND d1.name = CONCAT( zone_mx.name, '.', d2.name ) 
+AND d1.name = CONCAT( zone_mx.name, '.', d2.name )
 
 &&
 
@@ -85,4 +85,9 @@ DELETE
 FROM zone_mx
 WHERE domain IN ( 444, 543, 1045, 541 )
 
-
+Notes on how to do reverse pointers.
+====================================
+Whenever an IP is entered into the database, check which reverse zone it belongs to. So if you put
+128.193.14.16 into a host, reverse, or whatever record see which reverse domain is belongs to.
+It then uses that domain's key as a "reverse domain" key in the record. If it cant find a valid reverse
+domain, through up an error. This will help with building reverse zones. *Important* adding domains in a sain way (i.e. its easy to determine what reverse domain it is. 193.128.in-addr.arpa is hard to parse, maybe some sort of raw raw_ip feild containing "128.193").
