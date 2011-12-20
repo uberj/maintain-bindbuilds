@@ -1,4 +1,5 @@
 import database
+import time
 from zone import Zone
 from reverse_zone import Reverse_Zone
 from configurator import Configurator
@@ -9,7 +10,7 @@ from utilities import ip2long, long2ip
 class Maintain(object):
     def __init__( self, build_zone, build_rev, build_config, bind_dir, build_dir, run_records_test = False ):
         db = database.Database()
-        self.cur = db.get_cursor("maintain_sb")
+        self.cur = db.get_cursor("maintain")
         self.fd = open(build_dir+"/"+"db.none", "w+") # Zone needs this for bootstraping
 
         ### Behavior switches
@@ -23,7 +24,13 @@ class Maintain(object):
         self.build_dir = build_dir
         ###
 
+        ### Set the serial
+        Zone.SERIAL = int(time.time())
+        Reverse_Zone.SERIAL = int(time.time())
+        ###
+
         self.run_records_test = run_records_test
+
 
     def run( self ):
         if self.build_zone:
