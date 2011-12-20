@@ -161,13 +161,13 @@ class Zone(object):
     """
     Generate all A records from the pointer table (forward pointers)
     """
-# This might generate duplicate records TODO since we are just filtering on dname
-# If we did a tree search starting at the leaf nodes this would work better.
-# Right now all subdomain of some domain also generate all forward pointers.
-# Need a way to only print a forward pointer once.
-# Solution?
-# Before we do ORIGIN buisness print absolute domain names with their ip's
-# We could also print a $ORIGIN ., and at the end print $ORIGIN domain.
+    # This might generate duplicate records TODO since we are just filtering on dname
+    # If we did a tree search starting at the leaf nodes this would work better.
+    # Right now all subdomain of some domain also generate all forward pointers.
+    # Need a way to only print a forward pointer once.
+    # Solution?
+    # Before we do ORIGIN buisness print absolute domain names with their ip's
+    # We could also print a $ORIGIN ., and at the end print $ORIGIN domain.
     def gen_forward_pointers( self, domain, dname ):
         sql = "SELECT * FROM `pointer` WHERE hostname LIKE '%"+dname+"' AND `type`='forward' ORDER BY hostname"
         self.cur.execute(sql)
