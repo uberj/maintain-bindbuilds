@@ -25,8 +25,10 @@ class Maintain(object):
         ###
 
         ### Set the serial
-        Zone.SERIAL = int(time.time())
-        Reverse_Zone.SERIAL = int(time.time())
+        serial = int(time.time())
+        Zone.SERIAL = serial
+        Reverse_Zone.SERIAL = serial
+        print "Building "+str(serial)
         ###
 
         self.run_records_test = run_records_test
