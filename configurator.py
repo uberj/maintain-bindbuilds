@@ -1,3 +1,4 @@
+import build_test
 """
 Helper class to build named.conf files.
 """
@@ -15,12 +16,15 @@ class Configurator(object):
         self.conf_fd = open(self.bind_dir+"/"+"named.conf.maintain", "w+")
         self.named_checkzone = open(test_file, "w+")
         self.named_checkzone.write("#!/bin/bash\n")
+        self.bind_tests = build_test.Tester()
 
     def build_named_conf( self ):
         print "Building named.conf.maintain in "+self.bind_dir
+        test_cases = [] # Build some tests cases to be run later.
         for domain in self.get_auth_domains():
             self.conf_fd.write( self.gen_auth_zone( domain, "master", self.build_dir+"/"+domain ) )
-            self.named_checkzone.write("named-checkzone %s %s\n" % (domain, self.build_dir+"/"+domain) )
+            test_cases.append( (domain, self.build_dir+"/"+domain) )
+        self.bind_tests.run_zone_tests( test_cases )
 
 
     def gen_auth_zone( self,  name, server_type, file_path ):
