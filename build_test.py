@@ -1,4 +1,5 @@
 import unittest
+import ConfigParser
 import subprocess
 import pdb
 import pprint
@@ -6,9 +7,11 @@ import smtplib
 
 class Tester(object):
     def __init__(self):
-        self.mail = smtplib.SMTP('smtp.oregonstate.edu')
-        self.email = "bind@ns-dev.nws.oregonstate.edu"
-        self.email_to = "minions@net.oregonstate.edu"
+        self.config = ConfigParser.ConfigParser()
+        self.config.read("build.cfg")
+        self.mail = smtplib.SMTP(self.config.get('Email', 'smtp_server'))
+        self.local_email = self.config.get('Email', 'local_email')
+        self.testing_email = self.config.get('Email', 'testing_email')
 
     def build_test( self, zone, filepath ):
         def _test( self ):
@@ -30,14 +33,10 @@ class Tester(object):
         test_results = unittest.TextTestRunner(verbosity=2).run(suite)
         if test_results.errors or test_results.failures:
             # This could be more pretty
-            result_email = "To: %s\n" % (self.email_to)
-            result_email += "From: %s\n" % (self.email)
+            email_to = self.testing_email
+            result_email = "To: %s\n" % (email_to)
+            result_email += "From: %s\n" % (self.local_email)
             result_email += "Subject: %s\n" % ("Bind build notifications")
             if test_results.errors: result_email += "Errors:\n"+pprint.saferepr(test_results.errors)
             if test_results.failures: result_email += "Failures:\n"+pprint.saferepr(test_results.failures)
-            self.mail.sendmail(self.email, self.email_to, result_email)
-
-if __name__ == "__main__":
-    TESTS = [("orst.edu", "/var/named/orst.edu"),("oregonstate.edu", "/var/named/oregonstate.edu")]
-    t = Tester()
-    t.run_tests( TESTS )
+            self.mail.sendmail(self.local_email, email_to, result_email)

@@ -6,3 +6,4 @@ output
 build_test/*
 sync_prod_to_test.py
 real_bind_configs
+build.cfg
