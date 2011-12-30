@@ -1,0 +1,4 @@
+[Email]
+smtp_server     = ""
+local_email     = ""
+testing_email   = ""
