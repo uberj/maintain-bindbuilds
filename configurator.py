@@ -9,13 +9,12 @@ class Configurator(object):
     @param build_dir: Where the actual zone files will be placed after the build completes (bind needs to know this).
     @test_file: a generated bashscript that tests all zone files generated for syntax errors.
     """
-    def __init__( self, db_cur, bind_dir="/etc/bind", build_dir="/var/named", test_file="/tmp/maintain_checkzones" ):
+    def __init__( self, db_cur, filename="named.conf.maintain", bind_dir="/etc/bind", build_dir="/var/named" ):
         self.bind_dir = bind_dir # Where to put the named.conf file
         self.build_dir = build_dir # Where the zone files are kept
-        self.cur = db_cur# Database cursor
-        self.conf_fd = open(self.bind_dir+"/"+"named.conf.maintain", "w+")
-        self.named_checkzone = open(test_file, "w+")
-        self.named_checkzone.write("#!/bin/bash\n")
+        self.cur = db_cur # Database cursor
+        self.filename = filename
+        self.conf_fd = open(self.bind_dir + "/" + self.filename, "w+")
         self.bind_tests = build_test.Tester()
         self.test_cases = [] # tests cases to be run later.
                              # The format for a test case should be ( 'test_name', [args to subprocess] )
@@ -23,18 +22,32 @@ class Configurator(object):
     def build_named_conf( self ):
         print "Building named.conf.maintain in "+self.bind_dir
         for domain in self.get_auth_domains():
-            self.conf_fd.write( self.gen_auth_zone( domain, "master", self.build_dir+"/"+domain ) )
+            self.conf_fd.write( self.gen_auth_zone( domain, self.build_dir+"/"+domain ) )
             self.test_cases.append( (domain.replace('.','_'), ["named-checkzone","-q",domain, self.build_dir+"/"+domain ]) )
 
     def test_zone_files( self ):
         self.bind_tests.run_zone_tests( self.test_cases )
 
+    def build_named_slave ( self ):
+        print "Building slave named.conf.maintain in " + self.bind_dir
+        for domain in self.get_auth_domains():
+            self.conf_fd.write( self.gen_slave_zone ( domain, "128.193.15.15", self.build_dir + "/" + domain ) )
 
-    def gen_auth_zone( self,  name, server_type, file_path ):
+    def gen_auth_zone( self,  name, file_path ):
         l  = """zone "%s" {\n""" % (name)
-        l += """        type %s;\n""" % (server_type)
-        l += """        file "%s";\n""" % (file_path)
+        l += """    type master;\n"""
+        l += """    file "%s";\n""" % (file_path)
         l += """};\n"""
+        return l
+
+    def gen_slave_zone ( self, name, masters, file_path ):
+        l  = """zone "%s" {\n""" % (name)
+        l += """    type slave;\n"""
+        l += """    file "%s";\n""" % (file_path)
+        l += """    masters {\n"""
+        l += """        %s;\n""" % (masters)
+        l += """    };\n"""
+        l += """}\n"""
         return l
 
 

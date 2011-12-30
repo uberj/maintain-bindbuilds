@@ -17,7 +17,7 @@ class Maintain(object):
         ### Behavior switches
         self.build_zone = build_zone # build forward zone files?
         self.build_rev = build_rev # build reverse zone files?
-        self.build_config = build_config # build config file?
+        self.build_config = build_config
         ###
 
         ### Build dir's
@@ -45,11 +45,13 @@ class Maintain(object):
         if self.build_config:
             self.config_build( self.bind_dir , self.build_dir )
 
-
     # build named.conf.maintain file
     def config_build( self, bind_dir, build_dir ):
-        cf = Configurator( db_cur = self.cur, bind_dir=bind_dir, build_dir=build_dir)
-        cf.build_named_conf()
+        cf_master = Configurator( db_cur = self.cur, filename ="named.conf.maintain", bind_dir=bind_dir, build_dir=build_dir)
+        cf_master.build_named_conf()
+        cf_slave = Configurator( db_cur = self.cur, filename="named.conf.maintain.slave", bind_dir=bind_dir, build_dir=build_dir )
+        cf_slave.build_named_slave()
+
         if self.test_zone_files:
             cf.test_zone_files()
 
