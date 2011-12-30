@@ -48,12 +48,11 @@ class Maintain(object):
     # build named.conf.maintain file
     def config_build( self, bind_dir, build_dir ):
         cf_master = Configurator( db_cur = self.cur, filename ="named.conf.maintain", bind_dir=bind_dir, build_dir=build_dir)
-        cf_master.build_named_conf()
-        cf_slave = Configurator( db_cur = self.cur, filename="named.conf.maintain.slave", bind_dir=bind_dir, build_dir=build_dir )
-        cf_slave.build_named_slave()
+        cf_master.build_named_conf_master()
+        cf_master.build_named_conf_slave()
 
         if self.test_zone_files:
-            cf.test_zone_files()
+            cf_master.test_zone_files()
 
     def zones_build( self, build_dir ):
         # Regular zones

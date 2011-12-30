@@ -13,25 +13,28 @@ class Configurator(object):
         self.bind_dir = bind_dir # Where to put the named.conf file
         self.build_dir = build_dir # Where the zone files are kept
         self.cur = db_cur # Database cursor
-        self.filename = filename
-        self.conf_fd = open(self.bind_dir + "/" + self.filename, "w+")
+        self.master_filename = filename
+        self.slave_filename = filename+".slave"
+        self.master_conf_fd = open(self.bind_dir + "/" + self.master_filename, "w+")
+        self.slave_conf_fd = open(self.bind_dir + "/" + self.slave_filename, "w+")
         self.bind_tests = build_test.Tester()
         self.test_cases = [] # tests cases to be run later.
                              # The format for a test case should be ( 'test_name', [args to subprocess] )
 
-    def build_named_conf( self ):
-        print "Building named.conf.maintain in "+self.bind_dir
+    def build_named_conf_master( self ):
+        print "Building "+self.master_filename+" in "+self.bind_dir
         for domain in self.get_auth_domains():
-            self.conf_fd.write( self.gen_auth_zone( domain, self.build_dir+"/"+domain ) )
+            self.master_conf_fd.write( self.gen_auth_zone( domain, self.build_dir+"/"+domain ) )
             self.test_cases.append( (domain.replace('.','_'), ["named-checkzone","-q",domain, self.build_dir+"/"+domain ]) )
+
+    def build_named_conf_slave ( self ):
+        print "Building slave "+self.slave_filename+" in " + self.bind_dir
+        for domain in self.get_auth_domains():
+            self.slave_conf_fd.write( self.gen_slave_zone ( domain, "128.193.15.15", self.build_dir + "/" + domain ) )
 
     def test_zone_files( self ):
         self.bind_tests.run_zone_tests( self.test_cases )
 
-    def build_named_slave ( self ):
-        print "Building slave named.conf.maintain in " + self.bind_dir
-        for domain in self.get_auth_domains():
-            self.conf_fd.write( self.gen_slave_zone ( domain, "128.193.15.15", self.build_dir + "/" + domain ) )
 
     def gen_auth_zone( self,  name, file_path ):
         l  = """zone "%s" {\n""" % (name)
