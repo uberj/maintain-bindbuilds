@@ -74,5 +74,5 @@ Printing Group declarations
 
 # Santiy Checks
 * All dyn registrations should be tied to a _dynamic_ range.
-* Once a domain has an SOA, all subdomains should have the same SOA ... kind of. A domain can start a new soa, but the soa
-has to "trickle down"
+* Once a domain has an SOA, all subdomains should have the same SOA ... kind of. A domain can start a new soa, but the soa has to "trickle down"
+* A mac ip pair is unique. This will need to be enforced across a join since a mac's ip is a referece within an A record.
