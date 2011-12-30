@@ -50,7 +50,7 @@ class Configurator(object):
         l += """    masters {\n"""
         l += """        %s;\n""" % (masters)
         l += """    };\n"""
-        l += """}\n"""
+        l += """};\n"""
         return l
 
 
