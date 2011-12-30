@@ -78,9 +78,8 @@ class Zone(object):
         self.gen_NS( domain, dname )
         self.gen_MX( domain, dname )
         self.gen_A( domain, dname )
+        self.gen_dyn_ranges( domain, dname )
         self.gen_CNAME( domain, dname )
-        if dname == 'oregonstate.edu':
-            self.gen_dyn_ranges()
 
     def gen_MX( self, domain, dname ):
         self.cur.execute("SELECT * FROM `zone_mx` WHERE `domain`='%s' ORDER BY `name`;" % (domain))
@@ -141,9 +140,11 @@ class Zone(object):
         for record in records:
             self.printer.print_CNAME( record[2], record[1] )
 
-    def gen_dyn_ranges( self ):
-        self.printer.print_raw( "; Gen dyn_ranges\n" )
-        self.cur.execute("SELECT start, end FROM ranges WHERE type='dynamic' ORDER by start")
+    def gen_dyn_ranges( self, domain, dname ):
+        self.printer.print_raw( "; Gen dyn_ranges for %s\n" % (dname) )
+        self.cur.execute(  "SELECT start, end FROM ranges, zone_range\
+                            WHERE ranges.id = zone_range.range AND zone_range.default_domain = %s\
+                            AND ranges.type='dynamic' ORDER by start" % (domain) )
         ip_ranges = self.cur.fetchall()
         for ip_range in ip_ranges:
             for ip in range(ip_range[0],ip_range[1]+1):
