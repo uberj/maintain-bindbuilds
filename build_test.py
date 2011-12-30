@@ -13,10 +13,10 @@ class Tester(object):
         self.local_email = self.config.get('Email', 'local_email')
         self.testing_email = self.config.get('Email', 'testing_email')
 
-    def build_test( self, zone, filepath ):
+    def build_test( self, args):
         def _test( self ):
-            ret = subprocess.call(["named-checkzone","-q",str(zone), str(filepath)])
-            self.assertEqual(ret, 0, "named-checkzone %s %s" % (zone, filepath))
+            ret = subprocess.call(args)
+            self.assertEqual( ret, 0, args )
 
         return _test
 
@@ -25,10 +25,9 @@ class Tester(object):
 
 
     def run_zone_tests(self, tests):
-        for zone, filepath in tests:
-            func_name = "test_%s" % (zone.replace('.','_'))
-            test = self.build_test( zone, filepath )
-            setattr(self.TestBindBuilds, func_name, test)
+        for test in tests:
+            lambda_test = self.build_test( test[1] )
+            setattr(self.TestBindBuilds, "test_"+str(test[0]), lambda_test )
         suite = unittest.TestLoader().loadTestsFromTestCase(self.TestBindBuilds)
         test_results = unittest.TextTestRunner(verbosity=2).run(suite)
         if test_results.errors or test_results.failures:
