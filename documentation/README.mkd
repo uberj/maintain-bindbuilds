@@ -1,0 +1,78 @@
+Notes
+-----
+
+#### PTR Records
+These are tricky.
+Format: IP   PTR   name
+Assumptions: There is a reverse_domain that IP can be tied to. This means that if you want to make a
+pointer with the address 192.168.1.1 but you don't have the reverse_domain 192.168 (or something like it)
+then you won't be able to create that ptr.
+Case 1) name is within a valid subdomain of some domain in the domain table.
+Case 2) name is within some domain that is not in the domain table.
+    a) domain should be 0
+    b) name should be the full domain name (i.e. router.uofo.edu)
+
+### CNAME Records
+These are almost as tricky.
+Format: name    CNAME   other_name
+Assumptions: name is a valid name (ie it is under a valid domain in the domain table).
+Case 1) other_name is under a valid domain in the domain table
+Case 2) other_name is not under a valid domain
+    a) domain should be 0
+    b) the name field in the db should be the full name (i.e. foo.bar.google.com)
+
+## pseudo DHCP build
+print's are not in final place
+
+Printing class and subclass defintions (dynamic host records)
+
+    for dyn_range in Range.filter( type='dynamic' ):
+        for local_ctnr in range_CTNR.filter( range = dyn_range.id ).get_related( CTNR ): #Join
+            class_name = '"'+local_ctnr.name+':'+dyn_range.start+':'+dyn_range.stop+'"'
+            print 'class ${class_name} {'
+            print_class_options( dyn_range.id ) #TODO
+            print '}'
+            hosts = Dynamic_Registions.filter( ctnr = local_ctnr and range = dyn_range )
+            for host in hosts:
+                print 'subclass "${class_name}" 1:'+host.ha
+
+
+Printing Subnet declarations.
+
+    for subnet in Subnet.all():
+        print "subnet "+subnet.subnet+" netmask "+subnet.netmask+" {"
+        print_subnet_options( subnet.id )
+        for dyn_range in range.filter( subnet = subnet.id ):
+            # Sanity check
+            if dyn_range.type != "dynamic":
+                shit_a_brick()
+
+            # Priting pool statements.
+            print "    pool {"
+            print_pool_options( range.id )
+            for local_ctnr in range_CTNR.filter( range = dyn_range.id ).get_related( CTNR ): #Join
+                class_name = '"'+local_ctnr.name+':'+dyn_range.start+':'+dyn_range.stop+'"'
+                print "allow members of "+class_name
+
+            print "range "+str(dyn_range.start)+" "+str(dyn_range.stop)";"
+            print "     }"
+        print "}"
+
+Printing Group declarations
+
+    for local_group in Group.all():
+        print "group "+local_group.name+" {"
+        print_group_options( local_group.id )
+        for registration in static_registration.filter( group = group.id )
+            a_record = Forward.filter( registration.A )
+            ip = Ip.filter( id = a_record.ip )
+            print "host "+a_record.dname() { #dname is constructed by the A class
+            print "     fixed-address "+ip.ip_str+";"
+            print "     hardware ethernet "+registration.ha+";"
+        print "}"
+
+
+# Santiy Checks
+* All dyn registrations should be tied to a _dynamic_ range.
+* Once a domain has an SOA, all subdomains should have the same SOA ... kind of. A domain can start a new soa, but the soa
+has to "trickle down"
