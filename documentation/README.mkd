@@ -27,7 +27,7 @@ print's are not in final place
 Printing class and subclass defintions (dynamic host records)
 
     for dyn_range in Range.filter( type='dynamic' ):
-        for local_ctnr in range_CTNR.filter( range = dyn_range.id ).get_related( CTNR ): #Join
+        for local_ctnr in Range_CTNR.objects.filter( range = dyn_range ).get_related( CTNR ): #Join
             class_name = '"'+local_ctnr.name+':'+dyn_range.start+':'+dyn_range.stop+'"'
             print 'class ${class_name} {'
             print_class_options( dyn_range.id ) #TODO

@@ -31,6 +31,16 @@ class cruft {
     package { 'python-mysqldb':
         ensure => "present",
     }
+
+    package { 'pip':
+        ensure => "present",
+    }
+
+    package { 'Fabric':
+        provider => 'pip',
+        ensure => "present",
+        require => Package['pip'],
+    }
     #### Maintain stuff (write module, soon).
     package { 'libdbi-perl':
         ensure => "present",

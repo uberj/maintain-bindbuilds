@@ -9,7 +9,7 @@ class Configurator(object):
     @param build_dir: Where the actual zone files will be placed after the build completes (bind needs to know this).
     @test_file: a generated bashscript that tests all zone files generated for syntax errors.
     """
-    def __init__( self, db_cur, filename="named.conf", bind_dir="/etc/bind", build_dir="/var/named" ):
+    def __init__( self, db_cur, filename="named.conf", bind_dir="/etc/bind", build_dir="/etc/bind/zones" ):
         self.bind_dir = bind_dir # Where to put the named.conf file
         self.build_dir = build_dir # Where the zone files are kept
         self.cur = db_cur # Database cursor
@@ -20,7 +20,8 @@ class Configurator(object):
         self.bind_tests = build_test.Tester()
         self.test_cases = [] # tests cases to be run later.
                              # The format for a test case should be ( 'test_name', [args to subprocess] )
-        self.test_cases.append( ("config", ["named-checkconf","-z", self.bind_dir+"/"+filename ]) )
+		# Hard coded test
+        #self.test_cases.append( ("config", ["named-checkconf", "/etc/bind/"+filename ]) )
 
     def build_named_conf_master( self ):
         print "Building "+self.master_filename+" in "+self.bind_dir

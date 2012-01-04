@@ -47,7 +47,7 @@ class Maintain(object):
 
     # build named.conf.maintain file
     def config_build( self, bind_dir, build_dir ):
-        cf_master = Configurator( db_cur = self.cur, filename ="named.conf.maintain", bind_dir=bind_dir, build_dir=build_dir)
+        cf_master = Configurator( db_cur = self.cur, filename ="named.conf", bind_dir=bind_dir, build_dir=build_dir)
         cf_master.build_named_conf_master()
         cf_master.build_named_conf_slave()
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     parser.add_option("-z", "--zone", default=False, action="store_true", dest="build_zone", help="Build forward zones")
     parser.add_option("-r", "--rev_zone", default=False, action="store_true", dest="build_rev", help="Build reverse zones")
     parser.add_option("-c", "--config", default=False, action="store_true", dest="build_config", help="Build named.conf.maintain file")
-    parser.add_option("-b", "--build_dir", default="/var/named", dest="build_dir", help="A directory to store the build output")
+    parser.add_option("-b", "--build_dir", default="/etc/bind/zones", dest="build_dir", help="A directory to store the build output")
     parser.add_option("-d", "--bind_dir", default="/etc/bind", dest="bind_dir", help="Where to place the named.conf.maintain file")
     parser.add_option("-t", "--records_test", default=False, action="store_true", dest="run_records_test", help="Run records test claus")
     parser.add_option("-k", "--test_zone_files", default=False, action="store_true", dest="test_zone_files", help="Run records test claus")
